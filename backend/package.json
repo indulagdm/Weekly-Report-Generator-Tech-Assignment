@@ -1,0 +1,38 @@
+{
+  "name": "weekly-report-backend",
+  "version": "1.0.0",
+  "description": "Backend for Weekly Report Generator & Team Dashboard",
+  "main": "src/server.js",
+  "author": {
+    "name": "Indula Madhubhashana",
+    "email": "indula.madhubhashana@gmail.com"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "db:init": "node src/scripts/initDB.js",
+    "test": "cross-env NODE_ENV=test jest --runInBand"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.2.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.11.0",
+    "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "sqlite3": "^5.1.7",
+    "supertest": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
