@@ -73,7 +73,7 @@ export function hoursByType(reports, weekStartDate) {
     .filter((r) => r.weekStartDate === weekStartDate)
     .forEach((r) => {
       currentVersion(r).hours.forEach((h) => {
-        totals.set(h.taskType, (totals.get(h.taskType) ?? 0) + h.hours);
+        totals.set(h.taskType, (totals.get(h.taskType) ?? 0) + Number(h.hours));
       });
     });
   return Array.from(totals.entries())
