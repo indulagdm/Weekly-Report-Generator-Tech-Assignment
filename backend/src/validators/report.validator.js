@@ -14,7 +14,7 @@ const reportContentRules = [
   body('tasks').optional().isArray().withMessage('tasks must be an array'),
   body('tasks.*.task_name').optional().isString().notEmpty(),
   body('tasks.*.priority').optional().isIn(['low', 'medium', 'high']),
-  body('tasks.*.status').optional().isIn(['not_started', 'in_progress', 'completed', 'blocked']),
+  body('tasks.*.status').optional().isIn(['not_started', 'in_progress', 'done', 'completed', 'blocked']),
   body('tasks_planned_next_week').optional({ nullable: true }).isString(),
   body('blockers').optional().isArray(),
   body('blockers.*.description').optional().isString().notEmpty(),
