@@ -190,6 +190,8 @@ export function DataProvider({ children }) {
         ...item,
         reportId: item.report_id,
         reviewerId: item.reviewer_id,
+        action: item.action === "approve" ? "approved" : item.action,
+        versionNumber: item.version_number,
         createdAt: item.created_at,
       })),
     ]);
