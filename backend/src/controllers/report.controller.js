@@ -104,11 +104,18 @@ const listMyReports = asyncHandler(async (req, res) => {
 
 // GET /api/reports/:id - full detail incl. all versions (owner or manager).
 const getReport = asyncHandler(async (req, res) => {
+  const connection = await pool.getConnection();
   try {
-    const report = await loadReportForAccess(req);
+    await loadReportForAccess(req);
+    const report = await reportService.getReportById(connection, req.params.id);
+    if (!report) {
+      throw new ApiError(404, "Report not found");
+    }
     ok(res, report);
   } catch (error) {
     throw new ApiError(500, "Failed to get report");
+  } finally {
+    connection.release();
   }
 });
 

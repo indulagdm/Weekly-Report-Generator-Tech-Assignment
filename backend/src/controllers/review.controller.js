@@ -3,27 +3,36 @@ const { ApiError, ok } = require("../utils/apiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const { getPagination, buildMeta } = require("../utils/pagination");
 const { pool } = require("../config/database");
+const { v4: uuidv4 } = require("uuid");
 
 // GET /api/review/reports - Team Dashboard list (Section 4). Manager-only
 // (enforced by route middleware). Supports every filter Section 4 asks for.
 const listTeamReports = asyncHandler(async (req, res) => {
   try {
     const { page, limit, offset } = getPagination(req.query);
-    const where = {};
-
-    if (req.query.user_id) where.user_id = req.query.user_id;
-    if (req.query.project_id) where.project_id = req.query.project_id;
-    if (req.query.status) where.status = req.query.status;
-    if (req.query.week_start_date)
-      where.week_start_date = req.query.week_start_date;
-    if (req.query.from || req.query.to) {
-      where.week_start_date = {
-        ...(req.query.from ? { [Op.gte]: req.query.from } : {}),
-        ...(req.query.to ? { [Op.lte]: req.query.to } : {}),
-      };
+    const conditions = [];
+    const params = [];
+    const filters = [
+      ["r.user_id", req.query.user_id],
+      ["r.project_id", req.query.project_id],
+      ["r.status", req.query.status],
+      ["r.week_start_date", req.query.week_start_date],
+    ];
+    filters.forEach(([field, value]) => {
+      if (value) {
+        conditions.push(`${field} = ?`);
+        params.push(value);
+      }
+    });
+    if (req.query.from) {
+      conditions.push("r.week_start_date >= ?");
+      params.push(req.query.from);
     }
-
-    const status = req.query.status || "submitted";
+    if (req.query.to) {
+      conditions.push("r.week_start_date <= ?");
+      params.push(req.query.to);
+    }
+    const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const queryForReports = `
   SELECT
     r.id,
@@ -51,7 +60,7 @@ const listTeamReports = asyncHandler(async (req, res) => {
   INNER JOIN projects p
     ON p.id = r.project_id
 
-  WHERE r.status = ?
+  ${whereClause}
   
   ORDER BY
     r.week_start_date DESC,
@@ -60,13 +69,13 @@ const listTeamReports = asyncHandler(async (req, res) => {
   LIMIT ? OFFSET ?
 `;
 
-    const [resultForReports] = await pool.execute(queryForReports, [
-      status,
-      limit,
-      offset,
-    ]);
+    const [resultForReports] = await pool.execute(queryForReports, [...params, limit, offset]);
 
-    const count = resultForReports.length;
+    const [countRows] = await pool.execute(
+      `SELECT COUNT(*) AS count FROM reports r ${whereClause}`,
+      params,
+    );
+    const count = Number(countRows[0].count);
 
     ok(res, resultForReports, buildMeta({ page, limit, total: count }));
   } catch (error) {
@@ -118,11 +127,14 @@ const approveReport = asyncHandler(async (req, res) => {
     throw new ApiError(409, "The report has no current version to review");
   }
 
+  const reviewCommentId = uuidv4();
+
   const queryForInsertComment = `
-  INSERT INTO review_comments (report_id, report_version_id, reviewer_id, action, comment)
-  VALUES (?, ?, ?, ?, ?)
+  INSERT INTO review_comments (id, report_id, report_version_id, reviewer_id, action, comment)
+  VALUES (?, ?, ?, ?, ?, ?)
   `;
   await pool.execute(queryForInsertComment, [
+    reviewCommentId,
     report.id,
     currentVersion.id,
     req.user.id,
@@ -161,11 +173,13 @@ const requestChanges = asyncHandler(async (req, res) => {
     throw new ApiError(409, "The report has no current version to review");
   }
 
+  const reviewCommentId = uuidv4();
   const queryForInsertComment = `
-  INSERT INTO review_comments (report_id, report_version_id, reviewer_id, action, comment)
-  VALUES (?, ?, ?, ?, ?)
+  INSERT INTO review_comments (id, report_id, report_version_id, reviewer_id, action, comment)
+  VALUES (?, ?, ?, ?, ?, ?)
   `;
   await pool.execute(queryForInsertComment, [
+    reviewCommentId,
     report.id,
     currentVersion.id,
     req.user.id,
