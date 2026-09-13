@@ -82,9 +82,9 @@ export function ReportEditor() {
     setErrors(next);
     return Object.keys(next).length === 0;
   };
-  const save = () => {
+  const save = async () => {
     if (!validate(false)) return false;
-    updateReportContent(report.id, draft);
+    await updateReportContent(report.id, draft);
     setDirty(false);
     notify(
       willBranch
@@ -93,10 +93,10 @@ export function ReportEditor() {
     );
     return true;
   };
-  const submit = () => {
+  const submit = async () => {
     if (!validate(true)) return;
-    updateReportContent(report.id, draft);
-    submitReport(report.id);
+    await updateReportContent(report.id, draft);
+    await submitReport(report.id);
     notify("Report submitted for review");
     navigate(`/reports/${report.id}`);
   };

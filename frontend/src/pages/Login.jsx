@@ -3,7 +3,6 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
-import { DEMO_PASSWORD } from "../data/users";
 import { Button } from "../components/ui/Button";
 import { Field, Select, TextInput } from "../components/ui/Field";
 import { Avatar } from "../components/ui/Avatar";
@@ -13,8 +12,8 @@ export function Login() {
   const { users } = useData();
   const navigate = useNavigate();
   const [mode, setMode] = useState("login");
-  const [email, setEmail] = useState("amara@northlight.io");
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [role, setRole] = useState("team_member");
@@ -41,7 +40,13 @@ export function Login() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
       return setError("Enter a valid email address.");
     try {
-      await register({ name, email, password, role, title: title || "Team member" });
+      await register({
+        name,
+        email,
+        password,
+        role,
+        title: title || "Team member",
+      });
       navigate("/");
     } catch (requestError) {
       setError(requestError.message ?? "Unable to create the account.");
@@ -112,7 +117,7 @@ export function Login() {
               required
               hint={
                 mode === "login"
-                  ? `Demo password: ${DEMO_PASSWORD}`
+                  ? "Enter your password."
                   : "At least 6 characters."
               }
             >
@@ -177,7 +182,7 @@ export function Login() {
         </div>
       </div>
 
-      <aside className="relative hidden w-[48%] flex-col justify-between border-l border-line bg-surface px-14 py-14 lg:flex">
+      {/* <aside className="relative hidden w-[48%] flex-col justify-between border-l border-line bg-surface px-14 py-14 lg:flex">
         <div>
           <p className="text-[13px] font-medium text-ink-muted">
             The weekly loop
@@ -227,7 +232,7 @@ export function Login() {
         <div className="rounded-xl border border-line bg-subtle p-5">
           <p className="text-[13px] font-medium text-ink">Demo accounts</p>
           <p className="mt-1 text-2xs text-ink-faint">
-            Password for all seeded accounts: {DEMO_PASSWORD}
+            Use these accounts to log in and test the application.
           </p>
           <ul className="mt-3 space-y-1.5">
             {demoAccounts.map((account) => (
@@ -237,7 +242,7 @@ export function Login() {
                   onClick={() => {
                     setMode("login");
                     setEmail(account.email);
-                    setPassword(DEMO_PASSWORD);
+                    setPassword(account.password ?? "");
                     setError(null);
                   }}
                   className="flex w-full items-center gap-2.5 rounded-lg border border-transparent bg-surface px-3 py-2 text-left transition-colors duration-150 ease-out hover:border-line-strong"
@@ -255,6 +260,92 @@ export function Login() {
               </li>
             ))}
           </ul>
+        </div>
+      </aside> */}
+
+      <aside className="relative hidden w-[48%] flex-col justify-between border-l border-line bg-surface px-14 py-14 lg:flex">
+        <div>
+          <p className="text-[13px] font-medium text-ink-muted">
+            The weekly loop
+          </p>
+
+          <ol className="mt-5 space-y-5">
+            {[
+              [
+                "Draft",
+                "Team member fills the fixed weekly template — tasks, blockers, wins, hours.",
+              ],
+              ["Submitted", "The report lands in the manager review queue."],
+              [
+                "Needs correction",
+                "Manager sends it back with one clear comment; the member edits and resubmits.",
+              ],
+              [
+                "Approved",
+                "Locked in, and every prior version stays readable.",
+              ],
+            ].map(([label, body], index) => (
+              <li key={label} className="flex gap-4">
+                <span
+                  className={cn(
+                    "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-2xs font-semibold",
+                    index === 3
+                      ? "bg-accent text-white"
+                      : "bg-line text-ink-muted",
+                  )}
+                >
+                  {index === 3 ? (
+                    <CheckIcon className="h-3.5 w-3.5" />
+                  ) : (
+                    index + 1
+                  )}
+                </span>
+
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-ink">{label}</p>
+
+                  <p className="mt-0.5 max-w-lg text-[13px] leading-relaxed text-ink-muted">
+                    {body}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* Bottom information */}
+        <div className="border-t border-line pt-6">
+          <p className="text-sm font-medium text-ink">
+            One place for every weekly report.
+          </p>
+
+          <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-ink-muted">
+            Keep submissions organized, make reviews easier, and maintain a
+            complete history of every change from draft to approval.
+          </p>
+
+          <div className="mt-5 flex items-center gap-6">
+            <div>
+              <p className="text-lg font-semibold text-ink">Weekly</p>
+              <p className="mt-0.5 text-2xs text-ink-faint">Reporting cycle</p>
+            </div>
+
+            <div className="h-8 w-px bg-line" />
+
+            <div>
+              <p className="text-lg font-semibold text-ink">4 steps</p>
+              <p className="mt-0.5 text-2xs text-ink-faint">
+                From draft to approval
+              </p>
+            </div>
+
+            <div className="h-8 w-px bg-line" />
+
+            <div>
+              <p className="text-lg font-semibold text-ink">100%</p>
+              <p className="mt-0.5 text-2xs text-ink-faint">Version history</p>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
