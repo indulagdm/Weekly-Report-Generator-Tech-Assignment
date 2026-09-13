@@ -95,9 +95,8 @@ const getTeamReport = asyncHandler(async (req, res) => {
 
 // POST /api/review/reports/:id/approve
 const approveReport = asyncHandler(async (req, res) => {
-  try{
-
-  }catch(error){
+  try {
+  } catch (error) {
     throw new ApiError(500, "Failed to approve report");
   }
   const queryForReport = `SELECT * FROM reports WHERE id = ?`;
@@ -114,7 +113,10 @@ const approveReport = asyncHandler(async (req, res) => {
     );
   }
 
-  const currentVersion = reportService.getCurrentVersion(report);
+  const currentVersion = await reportService.getCurrentVersion(pool, report.id);
+  if (!currentVersion) {
+    throw new ApiError(409, "The report has no current version to review");
+  }
 
   const queryForInsertComment = `
   INSERT INTO review_comments (report_id, report_version_id, reviewer_id, action, comment)
@@ -124,7 +126,7 @@ const approveReport = asyncHandler(async (req, res) => {
     report.id,
     currentVersion.id,
     req.user.id,
-    "approved",
+    "approve",
     req.body.comment || null,
   ]);
 
@@ -135,7 +137,7 @@ const approveReport = asyncHandler(async (req, res) => {
   `;
   await pool.execute(queryForUpdateReport, [report.id]);
 
-  ok(res, await reportService.getReportById(report.id));
+  ok(res, await reportService.getReportById(pool, report.id));
 });
 
 // POST /api/review/reports/:id/request-changes
@@ -154,7 +156,10 @@ const requestChanges = asyncHandler(async (req, res) => {
     );
   }
 
-  const currentVersion = reportService.getCurrentVersion(report);
+  const currentVersion = await reportService.getCurrentVersion(pool, report.id);
+  if (!currentVersion) {
+    throw new ApiError(409, "The report has no current version to review");
+  }
 
   const queryForInsertComment = `
   INSERT INTO review_comments (report_id, report_version_id, reviewer_id, action, comment)
@@ -164,7 +169,7 @@ const requestChanges = asyncHandler(async (req, res) => {
     report.id,
     currentVersion.id,
     req.user.id,
-    "requested_changes",
+    "request_changes",
     req.body.comment,
   ]);
 
@@ -175,7 +180,7 @@ const requestChanges = asyncHandler(async (req, res) => {
   `;
   await pool.execute(queryForUpdateReport, [report.id]);
 
-  ok(res, await reportService.getReportById(report.id));
+  ok(res, await reportService.getReportById(pool, report.id));
 });
 
 // GET /api/review/reports/:id/comments - full review history (bonus:
