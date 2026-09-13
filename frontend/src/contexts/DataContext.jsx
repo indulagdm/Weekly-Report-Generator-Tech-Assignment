@@ -27,6 +27,8 @@ const mapProject = (project) => project && ({
 const mapTask = (task) => ({
   ...task,
   taskName: task.task_name ?? task.taskName ?? "",
+  priority: task.priority ? task.priority.toLowerCase() : "medium",
+  status: task.status === "completed" ? "done" : task.status,
   plannedPercent: task.planned_percent ?? task.plannedPercent ?? 0,
   actualPercent: task.actual_percent ?? task.actualPercent ?? 0,
   timePlannedHours: task.time_planned_hours ?? task.timePlannedHours ?? 0,
@@ -101,10 +103,16 @@ async function loadReports(user) {
     ? await api.review.list({ limit: 100 })
     : await api.reports.list({ limit: 100 });
   const rows = Array.isArray(list) ? list : [];
-  const details = await Promise.all(rows.map((report) => (
-    user.role === "manager" ? api.review.get(report.id) : api.reports.get(report.id)
-  ).catch(() => report)));
-  return details.map(mapReport);
+  const details = await Promise.all(rows.map(async (report) => {
+    try {
+      return await (user.role === "manager"
+        ? api.review.get(report.id)
+        : api.reports.get(report.id));
+    } catch {
+      return null;
+    }
+  }));
+  return details.filter(Boolean).map(mapReport);
 }
 
 export function DataProvider({ children }) {
