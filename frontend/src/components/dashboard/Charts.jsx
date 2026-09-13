@@ -103,7 +103,12 @@ export function WorkloadChart({ data }) {
 }
 const hoursColors = ["#1D5B4F", "#2F7D6C", "#4E9A88", "#8FBDB0", "#C6DBD3"];
 export function HoursByTypeChart({ data }) {
-  const total = data.reduce((s, d) => s + d.hours, 0);
+  const total = data.reduce((s, d) => s + Number(d.hours), 0);
+
+  console.log(
+    data,
+    data.reduce((sum, item) => sum + Number(item.hours), 0),
+  );
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row">
       <div className="h-[180px] w-[180px] shrink-0">
