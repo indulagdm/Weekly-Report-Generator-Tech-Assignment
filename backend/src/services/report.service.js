@@ -171,7 +171,7 @@ const writeVersionContent = async (connection, versionId, payload) => {
           )
           VALUES (?, ?, ?, ?)
           `,
-          [uuid4(), versionId, hour.task_type, hour.hours],
+          [uuid4(), versionId, hour.task_type === "Code Review" ? "Other" : hour.task_type, hour.hours],
         );
       }
     }

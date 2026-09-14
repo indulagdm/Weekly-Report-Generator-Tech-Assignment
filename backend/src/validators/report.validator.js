@@ -23,7 +23,7 @@ const reportContentRules = [
   body('achievements.*.description').optional().isString().notEmpty(),
   body('achievements.*.is_key_achievement').optional().isBoolean(),
   body('hours_breakdown').optional().isArray(),
-  body('hours_breakdown.*.task_type').optional().isIn(['Development', 'Testing', 'Meetings', 'Documentation', 'Other']),
+  body('hours_breakdown.*.task_type').optional().isIn(['Development', 'Testing', 'Meetings', 'Documentation', 'Other', 'Code Review']),
   body('hours_breakdown.*.hours').optional().isFloat({ min: 0 }),
   body('notes').optional({ nullable: true }).isString(),
   body('links').optional({ nullable: true }).isString(),

@@ -45,7 +45,10 @@ export async function request(path, options = {}) {
 	const body = await response.json().catch(() => null);
 	if (!response.ok || body?.success === false) {
 		if (response.status === 401) setToken(null);
-		const error = new Error(body?.message || "The request failed.");
+		const detailMessage = Array.isArray(body?.details)
+			? body.details.map((detail) => `${detail.path || detail.param}: ${detail.msg || detail.message}`).join("; ")
+			: "";
+		const error = new Error(detailMessage || body?.message || "The request failed.");
 		error.status = response.status;
 		error.details = body?.details;
 		throw error;
