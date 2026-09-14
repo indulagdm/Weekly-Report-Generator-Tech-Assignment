@@ -25,19 +25,30 @@ export async function request(path, options = {}) {
 	if (options.body !== undefined) headers.set("Content-Type", "application/json");
 	const token = getToken();
 	if (token) headers.set("Authorization", `Bearer ${token}`);
-	const response = await fetch(`${API_ROOT}${path}`, {
+	const requestOptions = {
 		...options,
 		headers,
+		cache: options.cache ?? "no-store",
 		body: options.body === undefined
 			? undefined
 			: typeof options.body === "string"
 				? options.body
 				: JSON.stringify(options.body),
-	});
+	};
+	let response = await fetch(`${API_ROOT}${path}`, requestOptions);
+	if (response.status === 304) {
+		response = await fetch(`${API_ROOT}${path}`, {
+			...requestOptions,
+			cache: "reload",
+		});
+	}
 	const body = await response.json().catch(() => null);
 	if (!response.ok || body?.success === false) {
 		if (response.status === 401) setToken(null);
-		const error = new Error(body?.message || "The request failed.");
+		const detailMessage = Array.isArray(body?.details)
+			? body.details.map((detail) => `${detail.path || detail.param}: ${detail.msg || detail.message}`).join("; ")
+			: "";
+		const error = new Error(detailMessage || body?.message || "The request failed.");
 		error.status = response.status;
 		error.details = body?.details;
 		throw error;
